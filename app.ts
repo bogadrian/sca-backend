@@ -5,7 +5,7 @@ import rateLimit from 'express-rate-limit';
 import helmet  from 'helmet';
 import mongoSanitize  from 'express-mongo-sanitize';
 import xss from 'xss-clean';
-//import hpp  from 'hpp';
+import hpp  from 'hpp';
 //import cookieParser  from 'cookie-parser';
 import compression  from 'compression';
 import cors  from 'cors';
@@ -13,7 +13,7 @@ import cors  from 'cors';
  import AppError from './utilis/appError';
  import globalErrorHandler  from './controllers/errorController';
 
-
+import userRouter from './routes/userRoutes';
 // Start express app
 const app = express();
 
@@ -47,12 +47,12 @@ if (process.env.NODE_ENV === 'development') {
 
 //Limit requests from same API
 const limiter = rateLimit({
-  max: 100,
+  max: 200,
   windowMs: 60 * 60 * 1000,
   message: 'Too many requests from this IP, please try again in an hour!'
 });
 
-app.use('/', limiter);
+app.use('/api', limiter);
 
 
 // Body parser, reading data from body into req.body
@@ -65,6 +65,9 @@ app.use(mongoSanitize());
 
 // Data sanitization against XSS
 app.use(xss());
+
+// Prevent parameters polution 
+app.use(hpp())
 
 // Prevent parameter pollution
 // app.use(
@@ -84,8 +87,11 @@ app.use(compression());
 
 
 // 3) ROUTES
-//app.use('/');
+app.use('/api/v1', (req, res) => {
+  res.json({ status: 'ok'})
+});
 
+app.use('/api/v1/users', userRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

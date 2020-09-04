@@ -13,7 +13,7 @@ import htmlToText from 'html-to-text';
     this.to = user.email;
     this.firstName = user.name.split(' ')[0];
     this.url = url;
-    this.from = `Jonas Schmedtmann <${process.env.EMAIL_FROM}>`;
+    this.from = `Social Coffee App <${process.env.EMAIL_FROM}>`;
   }
 
   newTransport() {
@@ -61,7 +61,7 @@ import htmlToText from 'html-to-text';
   }
 
   async sendWelcome() {
-    await this.send('welcome', 'Welcome to the Natours Family!');
+    await this.send('welcome', 'Welcome to Social Coffee App!');
   }
 
   async sendPasswordReset() {

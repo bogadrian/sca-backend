@@ -3,10 +3,10 @@ import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 
-const userSchema: mongoose.Schema = new mongoose.Schema({
+const coffeeProviderSchema: mongoose.Schema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Please tell us your name!']
+    required: [true, 'Please tell us the name of yours commercial activity!']
   },
   email: {
     type: String,
@@ -15,15 +15,17 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, 'Please provide a valid email']
   },
-  photo: {
-    type: String,
-    default: 'default.jpg'
+  photos: {
+    type: [String],
+    default: ['default.jpg']
   },
-  description: {
+  address: {
     type: String,
-    default: 'No description for me yet!',
-    // try if maxlength works .. ?
-    maxlength: 255
+    required: [true, 'Please provide an activity address']
+  },
+  vat: {
+      type: String,
+      required: [true, 'We need your vat number']
   },
   password: {
     type: String,
@@ -41,6 +43,14 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
       },
       message: 'Passwords are not the same!'
     }
+  }, 
+  position: {
+    type: {
+      type: String,
+      default: 'Point',
+      enum: ['Point']
+    },
+    coordinates: [Number],
   },
   passwordChangedAt: Date,
   passwordResetToken: {
@@ -53,8 +63,8 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: 'user',
-    select: false
+    default: 'coffee-provider',
+    select: true
   },
   active: {
     type: Boolean,
@@ -63,7 +73,7 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
   }
 });
 
-userSchema.pre('save', async function(next) {
+coffeeProviderSchema.pre('save', async function(next) {
   // Only run this function if password was actually modified
   if (!this.isModified('password')) return next();
 
@@ -75,28 +85,28 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
-userSchema.pre('save', function(next) {
+coffeeProviderSchema.pre('save', function(next) {
   if (!this.isModified('password') || this.isNew) return next();
 
   (this as any).passwordChangedAt = Date.now() - 1000;
   next();
 });
 
-userSchema.pre(/^find/, function(next) {
+coffeeProviderSchema.pre(/^find/, function(next) {
   // this points to the current query
   (this as any).find({ active: { $ne: false } });
   next();
 });
 
 
-userSchema.methods.correctPassword = async function(
+coffeeProviderSchema.methods.correctPassword = async function(
   candidatePassword: string,
   userPassword: string
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-userSchema.methods.changedPasswordAfter = function(JWTTimestamp: any) {
+coffeeProviderSchema.methods.changedPasswordAfter = function(JWTTimestamp: any) {
   if (this.passwordChangedAt) {
     const changedTimestamp: number = parseInt(
         this.passwordChangedAt.getTime(),
@@ -111,7 +121,7 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp: any) {
 };
 
 
-userSchema.methods.createPasswordResetToken = function() {
+coffeeProviderSchema.methods.createPasswordResetToken = function() {
   const resetToken = crypto.randomBytes(32).toString('hex');
 
   this.passwordResetToken = crypto
@@ -126,6 +136,6 @@ userSchema.methods.createPasswordResetToken = function() {
   return resetToken;
 };
 
-const User = mongoose.model('User', userSchema);
+const CoffeeProvider = mongoose.model('CoffeProvider', coffeeProviderSchema);
 
-export default User;
+export default CoffeeProvider;

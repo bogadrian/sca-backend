@@ -6,7 +6,7 @@ import helmet  from 'helmet';
 import mongoSanitize  from 'express-mongo-sanitize';
 import xss from 'xss-clean';
 import hpp  from 'hpp';
-//import cookieParser  from 'cookie-parser';
+import cookieParser  from 'cookie-parser';
 import compression  from 'compression';
 import cors  from 'cors';
 
@@ -14,6 +14,9 @@ import cors  from 'cors';
  import globalErrorHandler  from './controllers/errorController';
 
 import userRouter from './routes/userRoutes';
+import coffeeProviderRouter from './routes/coffeeProvider'
+
+
 // Start express app
 const app = express();
 
@@ -44,6 +47,11 @@ app.use(helmet());
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// Body parser, reading data from body into req.body
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(cookieParser());
 
 //Limit requests from same API
 const limiter = rateLimit({
@@ -87,11 +95,8 @@ app.use(compression());
 
 
 // 3) ROUTES
-app.use('/api/v1', (req, res) => {
-  res.json({ status: 'ok'})
-});
-
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/provider', coffeeProviderRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

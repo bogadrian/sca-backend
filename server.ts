@@ -10,8 +10,12 @@ process.on('uncaughtException', err => {
 dotenv.config({ path: './config.env' });
 import app from './app';
 
-const DB = process.env.DATABASE_CONNECTION!.replace(
-  '<password>',
+let DB = process.env.DATABASE!.replace(
+  '<DATABASE_NAME>',
+  process.env.DATABASE!
+);
+DB = process.env.DATABASE!.replace(
+  '<PASSWORD>',
   process.env.DATABASE_PASSWORD!
 );
 

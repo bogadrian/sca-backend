@@ -1,15 +1,17 @@
 import * as authFactory from './authFactory'
-import {NextFunction, Request, Response} from 'express'
+import {NextFunction, Request,  Response} from 'express'
 import AppError from '../utilis/appError';
 
-export const signup = authFactory.signup('User')
-export const login = authFactory.login('User')
-export const logout = authFactory.logout()
-export const protect = authFactory.protect('User')
 
-export const forgotPassword = authFactory.forgotPassword('User')
-export const resetPassword = authFactory.resetPassword('User')
-export const updatePassword = authFactory.updatePassword('User')
+export const signup = authFactory.signup('CoffeeProvider') 
+export const login = authFactory.login('CoffeeProvider')
+export const logout = authFactory.logout()
+export const protect = authFactory.protect('CoffeeProvider')
+
+export const forgotPassword = authFactory.forgotPassword('CoffeeProvider')
+export const resetPassword = authFactory.resetPassword('CoffeeProvider')
+export const updatePassword = authFactory.updatePassword('CoffeeProvider')
+export const test = authFactory.test()
 
 // Only for rendered pages, no errors!
 // export const isLoggedIn: RequestHandler = async (req, res, next) => {
@@ -41,23 +43,17 @@ export const updatePassword = authFactory.updatePassword('User')
 //   }
 //   next();
 // };
-
-
 type Restrict = (roles: string) => (req: Request, res: Response, next: NextFunction) => void;
 
 export const restrictTo: Restrict = (...roles) => {
- 
-  return (req, res, next) => {
-    console.log(roles)
-    
-    console.log(req.user.role)
-    // roles ['admin', 'lead-guide']. role='user'
-    if (!roles.includes(req.user.role)) {
-      return next(
-        new AppError('You do not have permission to perform this action', 403)
-      );
-    }
-
-    next();
-  };
-};
+ return (req, res, next) => {
+   console.log(req.user.role)
+     // roles ['admin', 'lead-guide']. role='user'
+     if (!roles.includes(req.user.role)) {
+       return next(
+         new AppError('You do not have permission to perform this action', 403)
+       );
+     }
+     next();
+   };
+ };

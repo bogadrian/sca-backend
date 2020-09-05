@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
 
+
 import {NextFunction, Request, Response, RequestHandler} from 'express'
 
 import User from '../models/userModel';
@@ -10,6 +11,7 @@ import CoffeeProvider from '../models/coffeeProviderModel'
 import catchAsync from '../utilis/catchAsync';
 import AppError from '../utilis/appError';
 import Email from '../utilis/email';
+
 
 type SignToken = (id: string) => string;
 const signToken: SignToken = (id) => {
@@ -79,43 +81,78 @@ export const signup: FuncM  = (model) => {
             address: req.body.address,
             position: req.body.position // formatLocation(req.body.position)
             }); 
-        }
-
+        }   
         
-   const url = `${req.protocol}://${req.get('host')}/me`;
-    console.log(url);
+        // call a function which hashes a token to be sent in email 
+        const emailToken = newUser.createEmailConfirmToken()
+        await newUser.save({ validateBeforeSave: false });
+        
+        let routeUserType: any; 
+        
+        if (model === 'User') {
+        routeUserType = 'users'
+        }else if (model === 'CoffeeProvider') {
+          routeUserType = 'provider'
+        }
+        
+   const url = `${req.protocol}://${req.get('host')}/api/v1/${routeUserType}/confirmation/${emailToken}/${newUser.name}`;
     await new Email(newUser, url).sendWelcome();
-
-   
-     console.log(newUser)
-    
     createSendToken(newUser, 201, req, res);
 });
 }
 
+const reactivateUser = async(email: string, model: string) => {
+  let user: any;
+  if (model === 'User') {
+    await User.update({email}, {$set: { active: true }}, {new: false}, (error: any, doc: any) =>  {
+      if (error) {
+      console.log("Something wrong when updating data!");
+     }
+     user = doc;
+    })
+  }
+  if (model === 'CoffeeProvider') {
+    await CoffeeProvider.update({email}, {$set: { active: true }}, {new: false}, (error: any, doc: any) =>  {
+      if (error) {
+      console.log("Something wrong when updating data!");
+     }
+    user = doc;
+     })
+   }
+  return user; 
+  }
+ 
+ 
+
 export const login: FuncM  = (model) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
-  console.log(email, password)
-
+  
   // 1) Check if email and password exist
   if (!email || !password) {
     return next(new AppError('Please provide email and password!', 400));
   }
   // 2) Check if user exists && password is correct
   let user: any;
+  
+  user = reactivateUser(email, model);
+  
   if (model === 'User') {
-    user = await User.findOne({ email }).select('+password -__v');
+    user = await User.findOne({ email }).select('+password -__v'); 
+    console.log(user)
   }
   
   if (model === 'CoffeeProvider') {
     user = await CoffeeProvider.findOne({ email }).select('+password -__v');
   }
 
+  
  
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
+  
+ 
 
   // 3) If everything ok, send token to client
   createSendToken(user, 200, req, res);
@@ -331,13 +368,12 @@ export const resetPassword: FuncM = (model) => {
   // 3) Update changedPasswordAt property for the user
   // 4) Log the user in, send JWT
   createSendToken(user, 200, req, res);
-});
-  
+}); 
 }
 
 export const updatePassword: FuncM = (model) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  console.log(req.body.passwordCurrent)
+
   // 1) Get user from collection
   
   let user: any;
@@ -374,4 +410,60 @@ export const test = () => {
     res.status(200).json({ status: 'success', data: { message: 'Test restrict to admin is working'}})
   }
  
+}
+
+export const getMe: RequestHandler = (req: any, res, next) => {
+
+  req.params.id = req.user.id;
+  next();
+};
+
+ 
+
+
+export const emailConfirm = (model: string) => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    // emailConfirm handler
+    
+    // check if the token in req.params.emailToken is same with token saved in db and then set it to undefind or return an error
+  
+    const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.emailToken)
+    .digest('hex');
+
+    let user: any;
+    
+    if (model === 'User') {
+        user = await User.findOne({
+        emailConfirmToken: hashedToken,
+        emailConfirmExpires: { $gt: Date.now() }
+        });
+    }
+    
+    if (model === 'CoffeeProvider') {
+        user = await CoffeeProvider.findOne({
+          emailConfirmToken: hashedToken,
+          emailConfirmExpires: { $gt: Date.now() }
+        });
+    }
+  
+  if (!user) {
+    return next(new AppError('Sorry but we could not confirm your email, please try again!', 400));
+  }
+
+  if (model === 'User') {
+    await User.findOneAndUpdate({_id: user._id}, {$set: {emailConfirm: true}})
+  }
+  
+  if (model === 'CoffeeProvider') {
+    await CoffeeProvider.findOneAndUpdate({_id: user._id}, {$set: {emailConfirm: true}})
+  }
+  
+  user.emailConfirmToken = undefined;
+  user.emailConfirmExpires = undefined;
+  await user.save({ validateBeforeSave: false });
+  
+    res.status(200).render('emailConfirm', {name: req.params.name});
+  }) 
 }

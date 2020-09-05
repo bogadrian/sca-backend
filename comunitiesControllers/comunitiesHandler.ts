@@ -1,11 +1,14 @@
+// Create comunity handler
+
 import multer from 'multer';
 import sharp from 'sharp';
 
 import {RequestHandler, Request, Response, NextFunction} from 'express'
 
-import User from './../models/userModel';
+
 import catchAsync from '../utilis/catchAsync';
 import AppError from '../utilis/appError';
+import CoffeeProvider from '../models/coffeeProviderModel';
 //import * as factory from './handlerFactory';
 
 
@@ -24,22 +27,35 @@ const upload = multer({
   fileFilter: multerFilter
 });
 
-export const uploadUserPhoto = upload.single('photo');
+export const uploadProviderImages = upload.array('images', 10);
 
-export const resizeUserPhoto = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.file) return next();
+export const resizeProviderPhotos  = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.files) return next();
 
-  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+    //2) Images
 
-  await sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat('jpeg')
-    .jpeg({ quality: 90 })
-    .toFile(`public/img/users/${req.file.filename}`);
+    req.body.images = [];
 
-  next();
-});
+    await Promise.all(
+      (req as any).files.map(async (file: any, i: number) => {
+        const filename = `place-${
+          req.user.id
+        }-${Date.now()}-${i + 1}.jpeg`;
 
+        await sharp(file.buffer)
+          .resize(500, 400)
+          .toFormat('jpeg')
+          .jpeg({ quality: 90 })
+          .toFile(`public/img/places/${filename}`);
+
+        req.body.images.push(filename);
+      })
+    );
+
+    next();
+  }
+);
 type IfilterObj = (obj: any, arg2: string, arg3: string) => any
 
 const filterObj: IfilterObj = (obj, ...allowedFields) => {
@@ -52,8 +68,7 @@ const filterObj: IfilterObj = (obj, ...allowedFields) => {
 
 
 
-
-export const updateMe: RequestHandler = catchAsync(async (req: any, res, next) => {
+export const createComunity: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // 1) Create error if user POSTs password data
   if (req.body.password || req.body.passwordConfirm) {
     return next(
@@ -69,7 +84,7 @@ export const updateMe: RequestHandler = catchAsync(async (req: any, res, next) =
   if (req.file) filteredBody.photo = req.file.filename;
 
   // 3) Update user document
-  const updatedUser: any = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+  const createComunity: any = await CoffeeProvider.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true
   });
@@ -77,26 +92,8 @@ export const updateMe: RequestHandler = catchAsync(async (req: any, res, next) =
   res.status(200).json({
     status: 'success',
     data: {
-      user: updatedUser
+      user: createComunity
     }
   });
 });
-
-
-// implemented refactor ??? 
-export const deleteMe: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  await User.findByIdAndUpdate(req.user.id, { active: false });
-
-  res.status(204).json({
-    status: 'success',
-    data: null
-  });
-});
-
-export const createUser: RequestHandler= (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not defined! Please use /signup instead'
-  });
-};
 

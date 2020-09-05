@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 
+
 const userSchema: mongoose.Schema = new mongoose.Schema({
   name: {
     type: String,
@@ -51,10 +52,22 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
     type: Date,
     select: false
   },
+  emailConfirmToken: {
+    type: String,
+    select: false
+  },
+  emailConfirmExpires: {
+    type: Date,
+    select: false
+  },
   role: {
     type: String,
     default: 'user',
     select: false
+  },
+  emailConfirm: {
+    type: Boolean,
+    default: false
   },
   active: {
     type: Boolean,
@@ -124,6 +137,25 @@ userSchema.methods.createPasswordResetToken = function() {
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
+};
+
+userSchema.methods.createEmailConfirmToken = function() {
+  const resetEmailToken = crypto.randomBytes(32).toString('hex');
+
+  this.emailConfirmToken = crypto
+    .createHash('sha256')
+    .update(resetEmailToken)
+    .digest('hex');
+
+  // console.log({ resetToken }, this.passwordResetToken);
+
+  this.emailConfirmExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetEmailToken;
+};
+
+userSchema.methods.correctEmailToken = async function(candidateToken: string, userToken: string) { 
+  return await bcrypt.compare(candidateToken, userToken);
 };
 
 const User = mongoose.model('User', userSchema);

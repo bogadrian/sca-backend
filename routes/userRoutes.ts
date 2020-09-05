@@ -1,6 +1,7 @@
 import express from 'express';
 import * as userController from '../controllers/userController';
 import * as authController from '../controllers/authController';
+import * as authFactory from '../controllers/authFactory';
 
 const router = express.Router();
 
@@ -11,11 +12,13 @@ router.get('/logout', authController.logout);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
+router.get('/confirmation/:emailToken/:name', authController.emailConfirm)
 // Protect all routes after this middleware
 router.use(authController.protect);
 
 router.patch('/updateMyPassword', authController.updatePassword);
-router.get('/me', userController.getMe, userController.getUser);
+
+router.get('/me', authFactory.getMe, authController.getUser);
 router.patch(
   '/updateMe',
   userController.uploadUserPhoto,
@@ -23,20 +26,9 @@ router.patch(
   userController.updateMe
 );
 
+
 router.delete('/deleteMe', userController.deleteMe);
 
-router.use(authController.restrictTo('admin'));
 
-router
-  .route('/')
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
-
-router
-  .route('/:id')
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
-  // one more for block user for n time
 
 export default router;

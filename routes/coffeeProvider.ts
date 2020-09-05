@@ -1,6 +1,8 @@
 import express from 'express';
 
 import * as coffeeAuthController from '../controllers/coffeeAuthController';
+import * as authFactory from '../controllers/authFactory'
+import * as providerController from '../controllers/providerController'
 
 const router = express.Router();
 
@@ -11,35 +13,39 @@ router.get('/logout', coffeeAuthController.logout);
 router.post('/forgotPassword', coffeeAuthController.forgotPassword);
 router.patch('/resetPassword/:token', coffeeAuthController.resetPassword);
 
+ router.get('/confirmation/:emailToken/:name', coffeeAuthController.emailConfirm)
 // Protect all routes after this middleware
 router.use(coffeeAuthController.protect);
 
  router.patch('/updateMyPassword', coffeeAuthController.updatePassword);
-// router.get('/me', coffeeAuthController.getMe, coffeeAuthController.getUser);
-// router.patch(
-//   '/updateMe',
-//   coffeeAuthController.uploadUserPhoto,
-//   coffeeAuthController.resizeUserPhoto,
-//   coffeeAuthController.updateMe
-// );
+ 
+router.get('/me', authFactory.getMe, coffeeAuthController.getUser);
+router.patch(
+  '/updateMe',
+  providerController.updateMeProvider
+);
 
-// router.delete('/deleteMe', coffeeAuthController.deleteMe);
+router.delete('/deleteMe', providerController.deleteMe);
 
 //something-not-easy-to-guess = admin; 
 router.use(coffeeAuthController.restrictTo('something-not-easy-to-guess'));
 
 router.route('/test').get(coffeeAuthController.test)
 
+
+// implement this for admin /api/v1/adms/
+
 // router
 //   .route('/')
-//   .get(userController.getAllUsers)
-//   .post(userController.createUser);
+//   .get(userController.getAllProviders)
+//   .post(userController.createProvider);
 
 // router
 //   .route('/:id')
-//   .get(userController.getUser)
-//   .patch(userController.updateUser)
-//   .delete(userController.deleteUser);
-//   // one more for block user for n time
+//   .get(userController.getProvider)
+//   .patch(userController.updateProvider)
+//   .delete(userController.deleteProvider);
+//   .patch(userController.blockProvider);
+// 
 
 export default router;

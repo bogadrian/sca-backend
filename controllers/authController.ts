@@ -1,4 +1,6 @@
 import * as authFactory from './authFactory'
+import * as factory from './handlerFactory'
+
 import {NextFunction, Request, Response} from 'express'
 import AppError from '../utilis/appError';
 
@@ -6,10 +8,12 @@ export const signup = authFactory.signup('User')
 export const login = authFactory.login('User')
 export const logout = authFactory.logout()
 export const protect = authFactory.protect('User')
+export const emailConfirm = authFactory.emailConfirm('User')
 
 export const forgotPassword = authFactory.forgotPassword('User')
 export const resetPassword = authFactory.resetPassword('User')
 export const updatePassword = authFactory.updatePassword('User')
+export const getUser = factory.getOne('User');
 
 // Only for rendered pages, no errors!
 // export const isLoggedIn: RequestHandler = async (req, res, next) => {
@@ -61,3 +65,5 @@ export const restrictTo: Restrict = (...roles) => {
     next();
   };
 };
+
+

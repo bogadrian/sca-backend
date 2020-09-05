@@ -60,6 +60,18 @@ const coffeeProviderSchema: mongoose.Schema = new mongoose.Schema({
   passwordResetExpires: {
     type: Date,
     select: false
+  },  
+  emailConfirmToken: {
+    type: String,
+    select: false
+  },
+  emailConfirmExpires: {
+    type: Date,
+    select: false
+  },
+  emailConfirm: {
+    type: Boolean,
+    default: false
   },
   role: {
     type: String,
@@ -135,6 +147,41 @@ coffeeProviderSchema.methods.createPasswordResetToken = function() {
 
   return resetToken;
 };
+
+coffeeProviderSchema.methods.createEmailConfirmToken = function() {
+  const resetEmailToken = crypto.randomBytes(32).toString('hex');
+
+  this.emailConfirmToken = crypto
+    .createHash('sha256')
+    .update(resetEmailToken)
+    .digest('hex');
+
+  // console.log({ resetToken }, this.passwordResetToken);
+
+  this.emailConfirmExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetEmailToken;
+};
+coffeeProviderSchema.methods.createEmailConfirmToken = function() {
+  const resetEmailToken = crypto.randomBytes(32).toString('hex');
+
+  this.emailConfirmToken = crypto
+    .createHash('sha256')
+    .update(resetEmailToken)
+    .digest('hex');
+
+  // console.log({ resetToken }, this.passwordResetToken);
+
+  this.emailConfirmExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetEmailToken;
+};
+
+
+coffeeProviderSchema.methods.correctEmailToken = async function(candidateToken: string, userToken: string) { 
+  return await bcrypt.compare(candidateToken, userToken);
+};
+
 
 const CoffeeProvider = mongoose.model('CoffeProvider', coffeeProviderSchema);
 

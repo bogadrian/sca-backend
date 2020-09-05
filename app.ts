@@ -17,6 +17,7 @@ import userRouter from './routes/userRoutes';
 import coffeeProviderRouter from './routes/coffeeProvider'
 
 
+
 // Start express app
 const app = express();
 
@@ -37,9 +38,12 @@ app.use(cors());
 //app.options('*', cors());
 // app.options('/api/v1/tours/:id', cors());
 
+// view engine
+app.set('views', path.join(__dirname, 'views'))
+app.set('view engine', 'pug');
+
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
-
 // Set security HTTP headers
 app.use(helmet());
 
@@ -97,6 +101,7 @@ app.use(compression());
 // 3) ROUTES
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/provider', coffeeProviderRouter);
+//app.use('/api/v1/adms', coffeeProviderRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

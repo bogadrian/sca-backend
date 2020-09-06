@@ -64,6 +64,10 @@ import htmlToText from 'html-to-text';
     await this.send('welcome', 'Welcome to Social Coffee App!');
   }
 
+  async sendResetEmailConfirmationToken() {
+    await this.send('resetEmail', 'Here is your confirmation email again!')
+  }
+  
   async sendPasswordReset() {
     await this.send(
       'passwordReset',

@@ -9,6 +9,7 @@ export const login = authFactory.login('User')
 export const logout = authFactory.logout()
 export const protect = authFactory.protect('User')
 export const emailConfirm = authFactory.emailConfirm('User')
+export const resendEmailConfirmation = authFactory.resendEmailConfirmationToken('User')
 
 export const forgotPassword = authFactory.forgotPassword('User')
 export const resetPassword = authFactory.resetPassword('User')

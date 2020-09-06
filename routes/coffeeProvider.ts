@@ -14,6 +14,8 @@ router.post('/forgotPassword', coffeeAuthController.forgotPassword);
 router.patch('/resetPassword/:token', coffeeAuthController.resetPassword);
 
  router.get('/confirmation/:emailToken/:name', coffeeAuthController.emailConfirm)
+ router.patch('/resend-confirmation', coffeeAuthController.resendEmailConfirmation)
+ 
 // Protect all routes after this middleware
 router.use(coffeeAuthController.protect);
 
@@ -22,6 +24,9 @@ router.use(coffeeAuthController.protect);
 router.get('/me', authFactory.getMe, coffeeAuthController.getUser);
 router.patch(
   '/updateMe',
+  // use this routes on createComunity
+  // providerController.resizeProviderPhotos,
+  // providerController.uploadProviderImages,
   providerController.updateMeProvider
 );
 

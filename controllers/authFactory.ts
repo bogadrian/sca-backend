@@ -12,7 +12,6 @@ import catchAsync from '../utilis/catchAsync';
 import AppError from '../utilis/appError';
 import Email from '../utilis/email';
 
-
 type SignToken = (id: string) => string;
 const signToken: SignToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {
@@ -91,7 +90,9 @@ export const signup: FuncM  = (model) => {
         
         if (model === 'User') {
         routeUserType = 'users'
-        }else if (model === 'CoffeeProvider') {
+        }
+        
+        if (model === 'CoffeeProvider') {
           routeUserType = 'provider'
         }
         
@@ -122,8 +123,6 @@ const reactivateUser = async(email: string, model: string) => {
   return user; 
   }
  
- 
-
 export const login: FuncM  = (model) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
@@ -145,18 +144,13 @@ export const login: FuncM  = (model) => {
   if (model === 'CoffeeProvider') {
     user = await CoffeeProvider.findOne({ email }).select('+password -__v');
   }
-
-  
  
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
-  
- 
-
   // 3) If everything ok, send token to client
   createSendToken(user, 200, req, res);
-});
+ });
 }
 
 export const logout: Func  = () => {
@@ -171,7 +165,7 @@ export const logout: Func  = () => {
 
 export const protect: FuncM  = (model) => {
    return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  // 1) Getting token and check of it's there
+  // 1) Getting token and check if it's there
   let token;
   if (
     req.headers.authorization &&
@@ -215,18 +209,13 @@ export const protect: FuncM  = (model) => {
     );
   }
   }
-  
-
   // 4) Check if user changed password after the token was issued
   if (currentUser.changedPasswordAfter(decoded.iat)) {
     return next(
       new AppError('User recently changed password! Please log in again.', 401)
     );
   }
-
   // GRANT ACCESS TO PROTECTED ROUTE
-
-  
   req.user = currentUser;
   res.locals.user = currentUser;
   next();
@@ -403,28 +392,32 @@ export const updatePassword: FuncM = (model) => {
   }); 
 }
 
-
 export const test = () => {
   return (req: Request, res: Response) => {
     
-    res.status(200).json({ status: 'success', data: { message: 'Test restrict to admin is working'}})
+    res.status(200).json({ status: 'success',
+     data: { 
+       message: 'Test restrict to admin is working'
+      }
+    })
   }
- 
 }
 
 export const getMe: RequestHandler = (req: any, res, next) => {
-
   req.params.id = req.user.id;
   next();
 };
 
- 
-
-
-export const emailConfirm = (model: string) => {
+export const emailConfirm: FuncM  = (model) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // emailConfirm handler
     
+    if( !req.params.emailToken || !req.params.name) {
+      return next(
+        new AppError('We could not verify your email. Please try agian',
+        500
+      ))
+    }
     // check if the token in req.params.emailToken is same with token saved in db and then set it to undefind or return an error
   
     const hashedToken = crypto
@@ -436,15 +429,13 @@ export const emailConfirm = (model: string) => {
     
     if (model === 'User') {
         user = await User.findOne({
-        emailConfirmToken: hashedToken,
-        emailConfirmExpires: { $gt: Date.now() }
+        emailConfirmToken: hashedToken
         });
     }
     
     if (model === 'CoffeeProvider') {
         user = await CoffeeProvider.findOne({
-          emailConfirmToken: hashedToken,
-          emailConfirmExpires: { $gt: Date.now() }
+          emailConfirmToken: hashedToken
         });
     }
   
@@ -461,9 +452,48 @@ export const emailConfirm = (model: string) => {
   }
   
   user.emailConfirmToken = undefined;
-  user.emailConfirmExpires = undefined;
   await user.save({ validateBeforeSave: false });
   
     res.status(200).render('emailConfirm', {name: req.params.name});
   }) 
+}
+
+export const resendEmailConfirmationToken: FuncM  = (model) => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    let user: any;
+  
+  if (model === 'User') {
+    user = await User.findOne({ email: req.body.email });
+  }
+  
+  if (model === 'CoffeeProvider') {
+    user = await CoffeeProvider.findOne({ email: req.body.email });
+  }
+  
+  if (!user) {
+    return next(new AppError('There is no user with email address.', 404));
+  }
+  const token = user.createEmailConfirmToken()
+   await user.save({ validateBeforeSave: false });
+ 
+        let routeUserType: any; 
+        
+        if (model === 'User') {
+        routeUserType = 'users'
+        }
+        
+        if (model === 'CoffeeProvider') {
+          routeUserType = 'provider'
+        }
+        
+   const url = `${req.protocol}://${req.get('host')}/api/v1/${routeUserType}/confirmation/${token}/${user.name}`;
+    await new Email(user, url).sendResetEmailConfirmationToken();
+    
+    res.status(200).json({
+      status: 'success', 
+      data: {
+      message: 'A new email was sent to you!'
+    }
+  })
+  })
 }

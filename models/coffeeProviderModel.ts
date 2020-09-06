@@ -15,10 +15,6 @@ const coffeeProviderSchema: mongoose.Schema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, 'Please provide a valid email']
   },
-  photos: {
-    type: [String],
-    default: ['default.jpg']
-  },
   address: {
     type: String,
     required: [true, 'Please provide an activity address']
@@ -61,14 +57,7 @@ const coffeeProviderSchema: mongoose.Schema = new mongoose.Schema({
     type: Date,
     select: false
   },  
-  emailConfirmToken: {
-    type: String,
-    select: false
-  },
-  emailConfirmExpires: {
-    type: Date,
-    select: false
-  },
+  emailConfirmToken: String,
   emailConfirm: {
     type: Boolean,
     default: false
@@ -156,10 +145,6 @@ coffeeProviderSchema.methods.createEmailConfirmToken = function() {
     .update(resetEmailToken)
     .digest('hex');
 
-  // console.log({ resetToken }, this.passwordResetToken);
-
-  this.emailConfirmExpires = Date.now() + 10 * 60 * 1000;
-
   return resetEmailToken;
 };
 coffeeProviderSchema.methods.createEmailConfirmToken = function() {
@@ -169,10 +154,6 @@ coffeeProviderSchema.methods.createEmailConfirmToken = function() {
     .createHash('sha256')
     .update(resetEmailToken)
     .digest('hex');
-
-  // console.log({ resetToken }, this.passwordResetToken);
-
-  this.emailConfirmExpires = Date.now() + 10 * 60 * 1000;
 
   return resetEmailToken;
 };

@@ -52,14 +52,7 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
     type: Date,
     select: false
   },
-  emailConfirmToken: {
-    type: String,
-    select: false
-  },
-  emailConfirmExpires: {
-    type: Date,
-    select: false
-  },
+  emailConfirmToken: String,
   role: {
     type: String,
     default: 'user',
@@ -146,10 +139,6 @@ userSchema.methods.createEmailConfirmToken = function() {
     .createHash('sha256')
     .update(resetEmailToken)
     .digest('hex');
-
-  // console.log({ resetToken }, this.passwordResetToken);
-
-  this.emailConfirmExpires = Date.now() + 10 * 60 * 1000;
 
   return resetEmailToken;
 };

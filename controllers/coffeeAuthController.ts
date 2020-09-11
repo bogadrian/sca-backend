@@ -11,6 +11,7 @@ export const logout = authFactory.logout()
 export const protect = authFactory.protect('CoffeeProvider')
 export const emailConfirm = authFactory.emailConfirm('CoffeeProvider')
 export const resendEmailConfirmation = authFactory.resendEmailConfirmationToken('CoffeeProvider')
+export const getMe = authFactory.getMeFromToken('CoffeeProvider')
 
 export const forgotPassword = authFactory.forgotPassword('CoffeeProvider')
 export const resetPassword = authFactory.resetPassword('CoffeeProvider')

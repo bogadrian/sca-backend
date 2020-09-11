@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@types/aws-sdk": "^2.7.0",
+    "@types/axios": "^0.14.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/compression": "^1.7.0",
     "@types/cookie-parser": "^1.4.2",
@@ -41,6 +42,7 @@
     "@types/sharp": "^0.25.1",
     "@types/validator": "^13.1.0",
     "aws-sdk": "^2.747.0",
+    "axios": "^0.20.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",

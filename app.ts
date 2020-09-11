@@ -14,6 +14,7 @@ import cors  from 'cors';
  import globalErrorHandler  from './controllers/errorController';
 
 import userRouter from './routes/userRoutes';
+import geoRouter from './routes/geoRouter';
 import coffeeProviderRouter from './routes/coffeeProvider'
 
 
@@ -99,8 +100,10 @@ app.use(compression());
 
 
 // 3) ROUTES
+
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/provider', coffeeProviderRouter);
+app.use('/api/v1/geo', geoRouter);
 //app.use('/api/v1/adms', coffeeProviderRouter);
 
 app.all('*', (req, res, next) => {

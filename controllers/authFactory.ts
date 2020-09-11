@@ -21,8 +21,9 @@ const signToken: SignToken = (id) => {
 
 type CreateSignToken = (user: any, statusCode: number, req: Request, res: Response) => void
 const createSendToken: CreateSignToken = (user, statusCode, req, res) => {
+  
   const token = signToken(user._id);
-
+console.log(token)
   res.cookie('jwt', token, {
     expires: new Date(
       Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN! as any) * 24 * 60 * 60 * 1000
@@ -43,23 +44,15 @@ const createSendToken: CreateSignToken = (user, statusCode, req, res) => {
   });
 };
 
-
-// const formatLocation = (coords: any) => {
-//     const lnglat = coords;
-//     const coord = lnglat.split(',');
-//     const coordinates = coord.map((coor:any) => {
-//     return coor * 1;
-//     });
-//     const position = { coordinates };
-//     return position
-// }
 type FuncM = (model: string) => RequestHandler;
 type Func = () => RequestHandler;
 
 
-export const signup: FuncM  = (model) => {
+export const signup: FuncM  = (model: string) => {
     return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
+const {user} = req.body
+console.log(user)
         let newUser: any;
         if (model === 'User') {
             newUser = await User.create({
@@ -72,16 +65,17 @@ export const signup: FuncM  = (model) => {
   
         if (model === 'CoffeeProvider') {
             newUser = await CoffeeProvider.create({
-            name: req.body.activityName,
-            email: req.body.email,
-            password: req.body.password,
-            passwordConfirm: req.body.passwordConfirm,
-            vat: req.body.vat,
-            address: req.body.address,
-            position: req.body.position // formatLocation(req.body.position)
+            name: user.name,
+            email: user.email,
+            password: user.password,
+            passwordConfirm: user.passwordConfirm,
+            vat: user.vat,
+            address: JSON.stringify(user.address[0]),
+            position: {coordinates: [user.position[0].latitude, user.position[0].longitude] }
             }); 
         }   
         
+        console.log(newUser)
         // call a function which hashes a token to be sent in email 
         const emailToken = newUser.createEmailConfirmToken()
         await newUser.save({ validateBeforeSave: false });
@@ -123,10 +117,10 @@ const reactivateUser = async(email: string, model: string) => {
   return user; 
   }
  
-export const login: FuncM  = (model) => {
+export const login: FuncM  = (model: string) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
-  
+  console.log(email, password, model)
   // 1) Check if email and password exist
   if (!email || !password) {
     return next(new AppError('Please provide email and password!', 400));
@@ -138,7 +132,6 @@ export const login: FuncM  = (model) => {
   
   if (model === 'User') {
     user = await User.findOne({ email }).select('+password -__v'); 
-    console.log(user)
   }
   
   if (model === 'CoffeeProvider') {
@@ -219,6 +212,62 @@ export const protect: FuncM  = (model) => {
   req.user = currentUser;
   res.locals.user = currentUser;
   next();
+});
+}
+
+export const getMeFromToken: FuncM  = (model: string) => {
+   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  // 1) Getting token and check if it's there
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+
+  if (!token) {
+    return next(
+      new AppError('You are not logged in! Please log in to get access.', 401)
+    );
+  }
+
+  // 2) Verification token
+  const decoded: any = await promisify(jwt.verify)(token, process.env.JWT_SECRET!);
+
+  // 3) Check if user still exists
+  let currentUser: any;
+  if (model === 'User') {
+     currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError(
+        'The user belonging to this token does no longer exist.',
+        401
+      )
+    );
+  }
+  }
+  if (model === 'CoffeeProvider') {
+     currentUser = await CoffeeProvider.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError(
+        'The user belonging to this token does no longer exist.',
+        401
+      )
+    );
+  }
+  }
+  
+  res.status(200).json({ 
+    status: 'success',
+    data: { 
+     user: currentUser
+   }
+  })
 });
 }
 
@@ -403,7 +452,7 @@ export const test = () => {
   }
 }
 
-export const getMe: RequestHandler = (req: any, res, next) => {
+export const getMe: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
   req.params.id = req.user.id;
   next();
 };

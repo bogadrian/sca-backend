@@ -15,11 +15,13 @@ router.patch('/resetPassword/:token', coffeeAuthController.resetPassword);
 
  router.get('/confirmation/:emailToken/:name', coffeeAuthController.emailConfirm)
  router.patch('/resend-confirmation', coffeeAuthController.resendEmailConfirmation)
- 
+ router.get('/getMe', coffeeAuthController.getMe)
 // Protect all routes after this middleware
 router.use(coffeeAuthController.protect);
 
- router.patch('/updateMyPassword', coffeeAuthController.updatePassword);
+
+
+router.patch('/updateMyPassword', coffeeAuthController.updatePassword);
  
 router.get('/me', authFactory.getMe, coffeeAuthController.getUser);
 router.patch(

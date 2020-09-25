@@ -99,7 +99,6 @@ exports.login = (model) => {
         user = reactivateUser(email, model);
         if (model === 'User') {
             user = await userModel_1.default.findOne({ email }).select('+password -__v');
-            console.log(user);
         }
         if (model === 'CoffeeProvider') {
             user = await coffeeProviderModel_1.default.findOne({ email }).select('+password -__v');

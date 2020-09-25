@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+//import cluster from 'cluster';
+//import os from 'os';
 
 process.on('uncaughtException', err => {
   console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
@@ -26,20 +28,40 @@ mongoose
   .connect(DB, {
     useNewUrlParser: true,
     useCreateIndex: true,
-    useFindAndModify: false, 
-    useUnifiedTopology: true 
+    useFindAndModify: false,
+    useUnifiedTopology: true
   })
   .then(() => console.log('DB connection successful!'));
 
-
 const port: number | string = process.env.PORT || 3000;
-const server = app.listen(port, () => {
+
+let server: any;
+// if (cluster.isMaster) {
+//   const numsCpu = os.cpus().length;
+
+//   for (let i = 0; i < numsCpu; i++) cluster.fork();
+
+//   cluster.on('exit', function (worker, code, signal) {
+//     console.log('worker' + worker.process.pid + 'died');
+//     console.log('Forking another worker process instead of that');
+//     cluster.fork();
+//   });
+// } else {
+//   //Worker process
+//   //Worker can share my TCP process
+//   // In this case is an http
+//   server = app.listen(port, () => {
+//     console.log(`App running on port ${port}...`);
+//   });
+// }
+
+server = app.listen(port, () => {
   console.log(`App running on port ${port}...`);
 });
 
 process.on('unhandledRejection', err => {
   console.log('UNHANDLED REJECTION! 💥 Shutting down...');
-  console.log(err)
+  console.log(err);
   server.close(() => {
     process.exit(1);
   });

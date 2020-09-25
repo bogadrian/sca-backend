@@ -12,26 +12,24 @@ router.get('/logout', authController.logout);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
-router.get('/confirmation/:emailToken/:name', authController.emailConfirm)
-router.patch('/resend-confirmation', authController.resendEmailConfirmation)
-router.get('/getMe', authController.getMe)
+router.get('/confirmation/:emailToken/:name', authController.emailConfirm);
+router.patch('/resend-confirmation', authController.resendEmailConfirmation);
+router.get('/getMe', authController.getMe);
 // Protect all routes after this middleware
 router.use(authController.protect);
-
 
 router.patch('/updateMyPassword', authController.updatePassword);
 
 router.get('/getUser', authFactory.getMe, authController.getUser);
+
 router.patch(
   '/updateMe',
-  userController.resizeUserPhoto,
+  //userController.resizeUserPhoto,
   userController.uploadPhoto,
+  //userController.testUpload
   userController.updateMe
 );
 
-
 router.delete('/deleteMe', userController.deleteMe);
-
-
 
 export default router;

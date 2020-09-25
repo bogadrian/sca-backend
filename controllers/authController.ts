@@ -54,7 +54,7 @@ type Restrict = (roles: string) => (req: Request, res: Response, next: NextFunct
 export const restrictTo: Restrict = (...roles) => {
  
   return (req, res, next) => {
-    console.log(roles)
+
     
     console.log(req.user.role)
     // roles ['admin', 'lead-guide']. role='user'

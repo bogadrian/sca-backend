@@ -2,26 +2,27 @@ import path from 'path';
 import express from 'express';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
-import helmet  from 'helmet';
-import mongoSanitize  from 'express-mongo-sanitize';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
 import xss from 'xss-clean';
-import hpp  from 'hpp';
-import cookieParser  from 'cookie-parser';
-import compression  from 'compression';
-import cors  from 'cors';
-
- import AppError from './utilis/appError';
- import globalErrorHandler  from './controllers/errorController';
+import hpp from 'hpp';
+import cookieParser from 'cookie-parser';
+import compression from 'compression';
+import cors from 'cors';
+// import formData from 'express-form-data';
+// import bodyParser from 'body-parser';
+import AppError from './utilis/appError';
+import globalErrorHandler from './controllers/errorController';
 
 import userRouter from './routes/userRoutes';
 import geoRouter from './routes/geoRouter';
-import coffeeProviderRouter from './routes/coffeeProvider'
-
-
+import coffeeProviderRouter from './routes/coffeeProvider';
 
 // Start express app
 const app = express();
 
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
 //app.enable('trust proxy');
 
 // app.set('view engine', 'pug');
@@ -35,12 +36,12 @@ app.use(cors());
 // app.use(cors({
 //   origin: 'https://www.natours.com'
 // }))
-
+//app.use(formData.parse());
 //app.options('*', cors());
 // app.options('/api/v1/tours/:id', cors());
 
 // view engine
-app.set('views', path.join(__dirname, 'views'))
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 // Serving static files
@@ -67,7 +68,6 @@ const limiter = rateLimit({
 
 app.use('/api', limiter);
 
-
 // Body parser, reading data from body into req.body
 // app.use(express.json({ limit: '10kb' }));
 // app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -79,8 +79,8 @@ app.use(mongoSanitize());
 // Data sanitization against XSS
 app.use(xss());
 
-// Prevent parameters polution 
-app.use(hpp())
+// Prevent parameters polution
+app.use(hpp());
 
 // Prevent parameter pollution
 // app.use(
@@ -97,7 +97,6 @@ app.use(hpp())
 // );
 
 app.use(compression());
-
 
 // 3) ROUTES
 

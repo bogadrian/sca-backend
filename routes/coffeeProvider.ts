@@ -27,6 +27,8 @@ router.use(coffeeAuthController.protect);
 
 router.patch('/updateMyPassword', coffeeAuthController.updatePassword);
 
+router.get('/getCount', providerController.getCount);
+
 router.get('/me', authFactory.getMe, coffeeAuthController.getUser);
 router.patch(
   '/updateMe',
@@ -37,6 +39,8 @@ router.patch(
 );
 
 router.delete('/deleteMe', providerController.deleteMe);
+
+router.patch('/writeUrl', providerController.writeMenuUrl);
 
 //something-not-easy-to-guess = admin;
 router.use(coffeeAuthController.restrictTo('something-not-easy-to-guess'));

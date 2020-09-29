@@ -73,7 +73,7 @@ export const signup: FuncM = (model: string) => {
         vat: user.vat,
         address: JSON.stringify(user.address[0]),
         position: {
-          coordinates: [user.position[0].latitude, user.position[0].longitude]
+          coordinates: [user.position.latitude, user.position.longitude]
         }
       });
     }
@@ -375,7 +375,7 @@ export const forgotPassword: FuncM = model => {
       // const resetURL = `${req.protocol}://${req.get(
       //   'host'
       // )}/api/v1/users/resetPassword/${resetToken}`;
-      const resetURL = `exp://sf-hwd.bogdan-dev.social-coffee.exp.direct:80/+/reset/token=${resetToken}`;
+      const resetURL = `exp://mq-faw.bogdan-dev.social-coffee.exp.direct:80/+/reset/token=${resetToken}`;
 
       await new Email(user, resetURL).sendPasswordReset();
 

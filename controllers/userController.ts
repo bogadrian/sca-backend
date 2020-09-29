@@ -1,5 +1,5 @@
 //import multer from 'multer';
-import sharp from 'sharp';
+//import sharp from 'sharp';
 
 import { RequestHandler, Request, Response, NextFunction } from 'express';
 
@@ -8,22 +8,6 @@ import catchAsync from '../utilis/catchAsync';
 import AppError from '../utilis/appError';
 
 import * as uploads from './s3Uploads';
-
-export const resizeUserPhoto = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.file) return next();
-
-    //req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-
-    await sharp(req.file.buffer)
-      .resize(500, 500)
-      .toFormat('jpeg')
-      .jpeg({ quality: 90 });
-    //.toFile(`public/img/users/${req.file.filename}`);
-
-    next();
-  }
-);
 
 type IfilterObj = (obj: any, ...allowedFields: string[]) => any;
 
@@ -36,11 +20,6 @@ const filterObj: IfilterObj = (obj, ...allowedFields) => {
 };
 
 export const uploadPhoto = uploads.uploadPhoto.single('photo');
-
-// export const testUpload = catchAsync(async (req: any, res: any, next: any) => {
-//   console.log('test request', req.file);
-//   next();
-// });
 
 export const updateMe: RequestHandler = catchAsync(
   async (req: any, res: Response, next: NextFunction) => {

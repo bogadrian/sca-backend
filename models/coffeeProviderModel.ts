@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
+import slugify from 'slugify';
 
 const coffeeProviderSchema: mongoose.Schema = new mongoose.Schema({
   name: {
@@ -34,6 +35,14 @@ const coffeeProviderSchema: mongoose.Schema = new mongoose.Schema({
   description: {
     type: String,
     default: 'No description for me yet!'
+  },
+  slug: String,
+  menuUrl: {
+    type: String,
+    default: '/a bar link here'
+  },
+  s3MenuLink: {
+    type: String
   },
   password: {
     type: String,
@@ -83,6 +92,13 @@ const coffeeProviderSchema: mongoose.Schema = new mongoose.Schema({
     default: true,
     select: false
   }
+});
+
+coffeeProviderSchema.pre('save', function (next) {
+  (this as any).slug = slugify((this as any).name, {
+    lower: true
+  });
+  next();
 });
 
 coffeeProviderSchema.pre('save', async function (next) {

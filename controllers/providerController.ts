@@ -30,7 +30,7 @@ export const updateMeProvider: RequestHandler = catchAsync(
 
     // 2) Filtered out unwanted fields names that are not allowed to be updated
     let filteredBody: any;
-    filteredBody = filterObj(req.body, 'name', 'vat', 'description');
+    filteredBody = filterObj(req.body, 'name', 'description');
 
     if (req.files) {
       filteredBody.images = req.files.map((file: any) => {
@@ -47,10 +47,6 @@ export const updateMeProvider: RequestHandler = catchAsync(
       filteredBody.description = req.user.description;
     }
 
-    if (!filteredBody.vat) {
-      filteredBody.description = req.user.vat;
-    }
-
     if (!filteredBody.images) {
       filteredBody.images = [req.user.images[0]];
     }
@@ -58,8 +54,6 @@ export const updateMeProvider: RequestHandler = catchAsync(
     if (!filteredBody.photo) {
       filteredBody.photo = req.user.photo;
     }
-
-    console.log(req.user, filteredBody.address);
 
     // 3) Update user document
     const providerUpdated = await CoffeeProvider.findByIdAndUpdate(
@@ -107,3 +101,29 @@ export const getMe: RequestHandler = (
   req.params.id = req.user.id;
   next();
 };
+
+export const getCount: RequestHandler = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.body);
+    const filter = {};
+    const response = await CoffeeProvider.find(filter);
+
+    return res.status(200).json({
+      status: 'success',
+      results: response.length
+    });
+  }
+);
+
+export const writeMenuUrl: RequestHandler = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const response = await CoffeeProvider.findByIdAndUpdate(req.user.id, {
+      menuUrl: req.body.urlProvider
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      data: response
+    });
+  }
+);

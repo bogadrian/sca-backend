@@ -12,6 +12,7 @@ const s3 = new aws.S3({
 });
 
 const fileFilter = (req: Request, file: any, cb: any) => {
+  console.log(file);
   if (file.mimetype.startsWith('image')) {
     cb(null, true);
   } else {

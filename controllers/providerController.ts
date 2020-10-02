@@ -4,7 +4,12 @@ import catchAsync from '../utilis/catchAsync';
 import AppError from '../utilis/appError';
 import CoffeeProvider from '../models/coffeeProviderModel';
 
+//import fetch from 'node-fetch';
+//import fs from 'fs';
+//import https from 'https';
+
 import * as uploads from './s3Uploads';
+import * as pdf from './s3Pdf';
 
 export const uploadProviderImages = uploads.uploadPhoto.array('images', 10);
 
@@ -125,5 +130,51 @@ export const writeMenuUrl: RequestHandler = catchAsync(
       status: 'success',
       data: response
     });
+  }
+);
+
+export const uploadPdfS3 = pdf.uploadPdfToS3.single('pdf');
+
+export const uploadPdf: RequestHandler = catchAsync(
+  async (req: any, res: Response, next: NextFunction) => {
+    const filePdf = req.file.location;
+
+    const providerUpdated = await CoffeeProvider.findByIdAndUpdate(
+      req.user.id,
+      { s3MenuLink: filePdf },
+      {
+        new: true,
+        runValidators: false
+      }
+    );
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: providerUpdated
+      }
+    });
+  }
+);
+
+export const redirectToPdf: RequestHandler = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const providerMenu: any = await CoffeeProvider.findOne({
+      menuUrl: req.params.providerSlug
+    });
+
+    const url = providerMenu.s3MenuLink;
+
+    res.redirect(url);
+  }
+);
+export const redirectToPdfFromMobileApp: RequestHandler = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const providerMenu: any = await CoffeeProvider.findOne({
+      menuUrl: req.params.providerSlug
+    });
+
+    const url = providerMenu.s3MenuLink;
+
+    res.status(200).json({ status: 'success', data: url });
   }
 );

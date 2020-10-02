@@ -38,8 +38,7 @@ const coffeeProviderSchema: mongoose.Schema = new mongoose.Schema({
   },
   slug: String,
   menuUrl: {
-    type: String,
-    default: '/a bar link here'
+    type: String
   },
   s3MenuLink: {
     type: String

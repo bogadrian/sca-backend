@@ -10,6 +10,12 @@ router.post('/signup', coffeeAuthController.signup);
 router.post('/login', coffeeAuthController.login);
 router.get('/logout', coffeeAuthController.logout);
 
+router.get('/commercial/:providerSlug', providerController.redirectToPdf);
+router.get(
+  '/appViewer/:providerSlug',
+  providerController.redirectToPdfFromMobileApp
+);
+
 router.post('/forgotPassword', coffeeAuthController.forgotPassword);
 router.patch('/resetPassword/:token', coffeeAuthController.resetPassword);
 
@@ -36,6 +42,13 @@ router.patch(
   // providerController.resizeProviderPhotos,
   providerController.uploadProviderImages,
   providerController.updateMeProvider
+);
+
+router.patch(
+  '/uploadPdf',
+
+  providerController.uploadPdfS3,
+  providerController.uploadPdf
 );
 
 router.delete('/deleteMe', providerController.deleteMe);

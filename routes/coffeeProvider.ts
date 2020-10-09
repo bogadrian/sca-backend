@@ -3,6 +3,7 @@ import express from 'express';
 import * as coffeeAuthController from '../controllers/coffeeAuthController';
 import * as authFactory from '../controllers/authFactory';
 import * as providerController from '../controllers/providerController';
+//import * as authController from '../controllers/authController';
 
 const router = express.Router();
 
@@ -11,6 +12,7 @@ router.post('/login', coffeeAuthController.login);
 router.get('/logout', coffeeAuthController.logout);
 
 router.get('/commercial/:providerSlug', providerController.redirectToPdf);
+
 router.get(
   '/appViewer/:providerSlug',
   providerController.redirectToPdfFromMobileApp
@@ -27,9 +29,13 @@ router.patch(
   '/resend-confirmation',
   coffeeAuthController.resendEmailConfirmation
 );
-router.get('/getMe', coffeeAuthController.getMe);
+
+// PROTECTED ROUTES FROM HERE
+
 // Protect all routes after this middleware
-router.use(coffeeAuthController.protect);
+router.use(coffeeAuthController.protectProvider);
+
+router.get('/getMe', coffeeAuthController.getMe);
 
 router.patch('/updateMyPassword', coffeeAuthController.updatePassword);
 
@@ -38,15 +44,12 @@ router.get('/getCount', providerController.getCount);
 router.get('/me', authFactory.getMe, coffeeAuthController.getUser);
 router.patch(
   '/updateMe',
-  // use this routes on createComunity
-  // providerController.resizeProviderPhotos,
   providerController.uploadProviderImages,
   providerController.updateMeProvider
 );
 
 router.patch(
   '/uploadPdf',
-
   providerController.uploadPdfS3,
   providerController.uploadPdf
 );

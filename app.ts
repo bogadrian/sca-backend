@@ -17,6 +17,7 @@ import globalErrorHandler from './controllers/errorController';
 import userRouter from './routes/userRoutes';
 import geoRouter from './routes/geoRouter';
 import coffeeProviderRouter from './routes/coffeeProvider';
+import communityRouter from './routes/communityRouter';
 
 // Start express app
 const app = express();
@@ -103,6 +104,8 @@ app.use(compression());
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/provider', coffeeProviderRouter);
 app.use('/api/v1/geo', geoRouter);
+app.use('/api/v1/community', communityRouter);
+
 //app.use('/api/v1/adms', coffeeProviderRouter);
 
 app.all('*', (req, res, next) => {

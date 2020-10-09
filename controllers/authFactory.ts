@@ -137,7 +137,7 @@ const reactivateUser = async (email: string, model: string) => {
 export const login: FuncM = (model: string) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
-    console.log(email, password, model);
+
     // 1) Check if email and password exist
     if (!email || !password) {
       return next(new AppError('Please provide email and password!', 400));
@@ -173,10 +173,12 @@ export const logout: Func = () => {
   };
 };
 
-export const protect: FuncM = model => {
+export const protect: FuncM = (model: string) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // 1) Getting token and check if it's there
+
     let token;
+
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer')
@@ -199,29 +201,26 @@ export const protect: FuncM = model => {
     );
 
     // 3) Check if user still exists
+
     let currentUser: any;
+
     if (model === 'User') {
       currentUser = await User.findById(decoded.id);
-      if (!currentUser) {
-        return next(
-          new AppError(
-            'This user does not exist. Please reactivate it by loging in agian with the right credentials, or create a new one!',
-            401
-          )
-        );
-      }
     }
+
     if (model === 'CoffeeProvider') {
       currentUser = await CoffeeProvider.findById(decoded.id);
-      if (!currentUser) {
-        return next(
-          new AppError(
-            'The user belonging to this token does no longer exist.',
-            401
-          )
-        );
-      }
     }
+
+    if (!currentUser) {
+      return next(
+        new AppError(
+          'This user does not exist. Please reactivate it by loging in agian with the right credentials, or create a new one!',
+          401
+        )
+      );
+    }
+
     // 4) Check if user changed password after the token was issued
     if (currentUser.changedPasswordAfter(decoded.iat)) {
       return next(
@@ -231,6 +230,7 @@ export const protect: FuncM = model => {
         )
       );
     }
+
     // GRANT ACCESS TO PROTECTED ROUTE
     req.user = currentUser;
     res.locals.user = currentUser;

@@ -1,20 +1,22 @@
-import * as authFactory from './authFactory'
-import * as factory from './handlerFactory'
+import * as authFactory from './authFactory';
+import * as factory from './handlerFactory';
 
-import {NextFunction, Request, Response} from 'express'
+import { NextFunction, Request, Response } from 'express';
 import AppError from '../utilis/appError';
 
-export const signup = authFactory.signup('User')
-export const login = authFactory.login('User')
-export const logout = authFactory.logout()
-export const protect = authFactory.protect('User')
-export const emailConfirm = authFactory.emailConfirm('User')
-export const resendEmailConfirmation = authFactory.resendEmailConfirmationToken('User')
-export const getMe = authFactory.getMeFromToken('User')
+export const signup = authFactory.signup('User');
+export const login = authFactory.login('User');
+export const logout = authFactory.logout();
+export const protectUser = authFactory.protect('User');
+export const emailConfirm = authFactory.emailConfirm('User');
+export const resendEmailConfirmation = authFactory.resendEmailConfirmationToken(
+  'User'
+);
+export const getMe = authFactory.getMeFromToken('User');
 
-export const forgotPassword = authFactory.forgotPassword('User')
-export const resetPassword = authFactory.resetPassword('User')
-export const updatePassword = authFactory.updatePassword('User')
+export const forgotPassword = authFactory.forgotPassword('User');
+export const resetPassword = authFactory.resetPassword('User');
+export const updatePassword = authFactory.updatePassword('User');
 export const getUser = factory.getOne('User');
 
 // Only for rendered pages, no errors!
@@ -48,15 +50,13 @@ export const getUser = factory.getOne('User');
 //   next();
 // };
 
-
-type Restrict = (roles: string) => (req: Request, res: Response, next: NextFunction) => void;
+type Restrict = (
+  roles: string
+) => (req: Request, res: Response, next: NextFunction) => void;
 
 export const restrictTo: Restrict = (...roles) => {
- 
   return (req, res, next) => {
-
-    
-    console.log(req.user.role)
+    console.log(req.user.role);
     // roles ['admin', 'lead-guide']. role='user'
     if (!roles.includes(req.user.role)) {
       return next(
@@ -67,5 +67,3 @@ export const restrictTo: Restrict = (...roles) => {
     next();
   };
 };
-
-

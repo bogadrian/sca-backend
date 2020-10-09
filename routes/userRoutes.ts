@@ -14,9 +14,11 @@ router.patch('/resetPassword/:token', authController.resetPassword);
 
 router.get('/confirmation/:emailToken/:name', authController.emailConfirm);
 router.patch('/resend-confirmation', authController.resendEmailConfirmation);
-router.get('/getMe', authController.getMe);
+
 // Protect all routes after this middleware
-router.use(authController.protect);
+router.use(authController.protectUser);
+
+router.get('/getMe', authController.getMe);
 
 router.patch('/updateMyPassword', authController.updatePassword);
 

@@ -7,7 +7,7 @@ import AppError from '../utilis/appError';
 export const signup = authFactory.signup('CoffeeProvider');
 export const login = authFactory.login('CoffeeProvider');
 export const logout = authFactory.logout();
-export const protect = authFactory.protect('CoffeeProvider');
+export const protectProvider = authFactory.protect('CoffeeProvider');
 export const emailConfirm = authFactory.emailConfirm('CoffeeProvider');
 export const resendEmailConfirmation = authFactory.resendEmailConfirmationToken(
   'CoffeeProvider'

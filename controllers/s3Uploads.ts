@@ -12,7 +12,7 @@ const s3 = new aws.S3({
 });
 
 const fileFilter = (req: Request, file: any, cb: any) => {
-  console.log(file);
+  console.log('8888888888888888', file);
   if (file.mimetype.startsWith('image')) {
     cb(null, true);
   } else {

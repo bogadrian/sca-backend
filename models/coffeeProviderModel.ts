@@ -107,6 +107,8 @@ coffeeProviderSchema.pre('save', function (next) {
   next();
 });
 
+coffeeProviderSchema.index({ position: '2dsphere' });
+
 coffeeProviderSchema.pre('save', async function (next) {
   // Only run this function if password was actually modified
   if (!this.isModified('password')) return next();

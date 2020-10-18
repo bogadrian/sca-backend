@@ -24,6 +24,7 @@ type CreateSignToken = (
   req: Request,
   res: Response
 ) => void;
+
 const createSendToken: CreateSignToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
   res.cookie('jwt', token, {
@@ -106,7 +107,7 @@ export const signup: FuncM = (model: string) => {
 const reactivateUser = async (email: string, model: string) => {
   let user: any;
   if (model === 'User') {
-    await User.update(
+    await User.updateOne(
       { email },
       { $set: { active: true } },
       { new: false },
@@ -119,7 +120,7 @@ const reactivateUser = async (email: string, model: string) => {
     );
   }
   if (model === 'CoffeeProvider') {
-    await CoffeeProvider.update(
+    await CoffeeProvider.updateOne(
       { email },
       { $set: { active: true } },
       { new: false },
@@ -176,32 +177,33 @@ export const logout: Func = () => {
 export const protect: FuncM = (model: string) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // 1) Getting token and check if it's there
-
     let token;
 
     if (
+      // token from header
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer')
     ) {
+      //token from cookie
       token = req.headers.authorization.split(' ')[1];
     } else if (req.cookies.jwt) {
       token = req.cookies.jwt;
     }
 
+    // if no token, return a custom error
     if (!token) {
       return next(
         new AppError('You are not logged in! Please log in to get access.', 401)
       );
     }
 
-    // 2) Verification token
+    // 2) Verify the token
     const decoded: any = await promisify(jwt.verify)(
       token,
       process.env.JWT_SECRET!
     );
 
     // 3) Check if user still exists
-
     let currentUser: any;
 
     if (model === 'User') {
@@ -212,6 +214,7 @@ export const protect: FuncM = (model: string) => {
       currentUser = await CoffeeProvider.findById(decoded.id);
     }
 
+    //if no user return a custom error
     if (!currentUser) {
       return next(
         new AppError(
@@ -494,13 +497,11 @@ export const emailConfirm: FuncM = model => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // emailConfirm handler
 
-    console.log(req.params);
     if (!req.params.emailToken || !req.params.name) {
       return next(
         new AppError('We could not verify your email. Please try agian', 500)
       );
     }
-    // check if the token in req.params.emailToken is same with token saved in db and then set it to undefind or return an error
 
     const hashedToken = crypto
       .createHash('sha256')
@@ -546,8 +547,6 @@ export const emailConfirm: FuncM = model => {
 
     user.emailConfirmToken = undefined;
     await user.save({ validateBeforeSave: false });
-
-    console.log('user', user);
 
     //res.status(200).render('emailConfirm', { name: req.params.name });
 

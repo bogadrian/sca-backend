@@ -40,6 +40,10 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
       message: 'Passwords are not the same!'
     }
   },
+  // push the community id in this array when user asks to join a community. at the same request with pushing it to accessRequest to community Model.
+  myCommunities: {
+    type: Array
+  },
   passwordChangedAt: Date,
   passwordResetToken: {
     type: String,
